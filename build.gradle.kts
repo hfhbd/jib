@@ -178,3 +178,9 @@ detekt {
   buildUponDefaultConfig = true
   config.setFrom(files(project.rootDir.resolve("detekt.yml")))
 }
+
+afterEvaluate {
+  configurations.getByName("testImplementation").dependencies.removeIf {
+    it !is ExternalModuleDependency
+  }
+}
