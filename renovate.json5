@@ -19,5 +19,9 @@
       matchPackageNames: ["dev.gradleplugins:gradle-api"],
       enabled: false,
     },
+    {
+      matchPackageNames: ["dev.detekt:dev.detekt.gradle.plugin"],
+      enabled: false,
+    },
   ],
 }
