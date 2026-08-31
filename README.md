@@ -23,4 +23,4 @@ jvmApplication {
 }
 
 ```
-Only publishing to an OCI registry is supported, no local tar generation.
+Using the docker daemon to build and push the image is not supported.

@@ -9,6 +9,7 @@ import com.google.cloud.tools.jib.api.JibContainerBuilder
 import com.google.cloud.tools.jib.api.LogEvent
 import com.google.cloud.tools.jib.api.Ports
 import com.google.cloud.tools.jib.api.RegistryImage
+import com.google.cloud.tools.jib.api.TarImage
 import com.google.cloud.tools.jib.api.buildplan.AbsoluteUnixPath
 import com.google.cloud.tools.jib.api.buildplan.ImageFormat
 import com.google.cloud.tools.jib.api.buildplan.Platform
@@ -29,6 +30,7 @@ import org.gradle.api.provider.Property
 import org.gradle.api.provider.SetProperty
 import org.gradle.api.tasks.CacheableTask
 import org.gradle.api.tasks.Classpath
+import org.gradle.api.tasks.IgnoreEmptyDirectories
 import org.gradle.api.tasks.Input
 import org.gradle.api.tasks.InputDirectory
 import org.gradle.api.tasks.InputFiles
@@ -48,6 +50,8 @@ import javax.inject.Inject
 
 @CacheableTask
 abstract class JibTask : DefaultTask() {
+
+    private val isOffline = project.gradle.startParameter.isOffline
 
     @get:Input
     @get:Optional
@@ -75,56 +79,49 @@ abstract class JibTask : DefaultTask() {
     abstract val toPassword: Property<String>
 
     @get:Input
-    @get:Optional
     abstract val toTags: SetProperty<String>
 
     @get:Input
     abstract val toFormat: Property<io.github.hfhbd.jib.ImageFormat>
 
-    @get:Optional
     @get:Input
     abstract val jvmFlags: ListProperty<String>
 
-    @get:Optional
     @get:Input
     abstract val environment: MapProperty<String, String>
 
-    @get:Optional
     @get:Input
     abstract val entrypoint: ListProperty<String>
 
     @get:Input
     abstract val mainClass: Property<String>
 
-    @get:Optional
     @get:Input
     abstract val args: ListProperty<String>
 
-    @get:Optional
     @get:Input
     abstract val ports: ListProperty<String>
 
-    @get:Optional
     @get:Input
     abstract val volumes: ListProperty<String>
 
-    @get:Optional
     @get:Input
     abstract val labels: MapProperty<String, String>
 
     @get:Input
     abstract val appRoot: Property<String>
 
-    @get:Optional
     @get:Input
+    @get:Optional
     abstract val user: Property<String>
 
-    @get:Optional
     @get:Input
+    @get:Optional
     abstract val workingDirectory: Property<String>
 
     @get:InputDirectory
     @get:PathSensitive(PathSensitivity.RELATIVE)
+    @get:IgnoreEmptyDirectories
     abstract val classesDirectory: DirectoryProperty
 
     @get:Input
@@ -134,8 +131,9 @@ abstract class JibTask : DefaultTask() {
     @get:PathSensitive(PathSensitivity.RELATIVE)
     abstract val files: ListProperty<File>
 
-    @get:InputDirectory
+    @get:InputFiles
     @get:PathSensitive(PathSensitivity.RELATIVE)
+    @get:IgnoreEmptyDirectories
     abstract val resources: DirectoryProperty
 
     @get:LocalState
@@ -149,6 +147,9 @@ abstract class JibTask : DefaultTask() {
 
     @get:OutputFile
     abstract val imageId: RegularFileProperty
+
+    @get:OutputFile
+    abstract val tarFile: RegularFileProperty
 
     @get:Classpath
     abstract val jibClasspath: ConfigurableFileCollection
@@ -181,12 +182,7 @@ abstract class JibTask : DefaultTask() {
             it.toUsername.set(toUsername)
             it.toPassword.set(toPassword)
             it.toTags.set(toTags)
-            it.toFormat.set(toFormat.map {
-                when (it) {
-                    io.github.hfhbd.jib.ImageFormat.OCI -> ImageFormat.OCI
-                    io.github.hfhbd.jib.ImageFormat.Docker -> ImageFormat.Docker
-                }
-            })
+            it.toFormat.set(toFormat)
 
             it.jvmFlags.set(jvmFlags)
             it.environment.set(environment)
@@ -209,6 +205,9 @@ abstract class JibTask : DefaultTask() {
 
             it.digest.set(digest)
             it.imageId.set(imageId)
+            it.tarFile.set(tarFile)
+
+            it.offline.set(isOffline)
         }
     }
 }
@@ -233,7 +232,7 @@ abstract class Worker : WorkAction<Worker.Params> {
         val toUsername: Property<String>
         val toPassword: Property<String>
         val toTags: SetProperty<String>
-        val toFormat: Property<ImageFormat>
+        val toFormat: Property<io.github.hfhbd.jib.ImageFormat>
 
         val jvmFlags: ListProperty<String>
         val environment: MapProperty<String, String>
@@ -256,6 +255,8 @@ abstract class Worker : WorkAction<Worker.Params> {
 
         val digest: RegularFileProperty
         val imageId: RegularFileProperty
+        val tarFile: RegularFileProperty
+        val offline: Property<Boolean>
     }
 
     private val logger: Logger = Logging.getLogger(javaClass)
@@ -273,9 +274,19 @@ abstract class Worker : WorkAction<Worker.Params> {
 
     override fun execute() {
         val imageRef = ImageReference.parse(parameters.toImage.get())
-        val targetImage = RegistryImage.named(imageRef)
-        targetImage.configureCredentialRetrievers(imageRef, parameters.toUsername.orNull, parameters.toPassword.orNull)
-        val containerizer = Containerizer.to(targetImage)
+        val containerizer = if (parameters.offline.get()) {
+            val targetImage = TarImage.at(parameters.tarFile.get().asFile.toPath())
+                .named(imageRef)
+            Containerizer.to(targetImage)
+        } else {
+            val targetImage = RegistryImage.named(imageRef)
+            targetImage.configureCredentialRetrievers(
+                imageRef,
+                parameters.toUsername.orNull,
+                parameters.toPassword.orNull
+            )
+            Containerizer.to(targetImage)
+        }
 
         val baseImageCachePath = parameters.baseImageCache.asFile.get().toPath()
         val applicationCachePath = parameters.applicationCache.asFile.get().toPath()
@@ -289,7 +300,7 @@ abstract class Worker : WorkAction<Worker.Params> {
             baseImageCachePath,
             applicationCachePath,
             parameters.classesDirectory.get(),
-            parameters.resources.get(),
+            parameters.resources.orNull,
             parameters.dependencies.get(),
         )
     }
@@ -332,7 +343,7 @@ abstract class Worker : WorkAction<Worker.Params> {
     private fun setupBuilder(
         appRoot: String,
         sourceSetOutputClassesDir: Directory,
-        sourceSetOutputResourcesDir: Directory,
+        sourceSetOutputResourcesDir: Directory?,
         dependencies: List<DependencyFileType>,
     ): JibContainerBuilder {
         val appRoot = AbsoluteUnixPath.get(appRoot)
@@ -351,16 +362,20 @@ abstract class Worker : WorkAction<Worker.Params> {
                     DependencyFileType.Type.External -> {
                         addDependencies(jar.toPath())
                     }
+
                     DependencyFileType.Type.Snapshot -> {
                         addSnapshotDependencies(jar.toPath())
                     }
+
                     DependencyFileType.Type.Project -> {
                         addProjectDependencies(jar.toPath())
                     }
                 }
             }
 
-            addResources(sourceSetOutputResourcesDir.asFile.toPath())
+            if (sourceSetOutputResourcesDir != null && sourceSetOutputResourcesDir.asFile.exists()) {
+                addResources(sourceSetOutputResourcesDir.asFile.toPath())
+            }
 
             setMainClass(parameters.mainClass.get())
         }
@@ -368,20 +383,23 @@ abstract class Worker : WorkAction<Worker.Params> {
         val platforms = parameters.fromPlatforms.get().mapTo(mutableSetOf()) {
             val (architecture, os) = it.split("/")
             Platform(architecture, os)
-        }
+        }.ifEmpty {  setOf(Platform("amd64", "linux")) }
 
-        val volumes = parameters.volumes.orNull?.mapTo(mutableSetOf()) {
+        val volumes = parameters.volumes.get().mapTo(mutableSetOf()) {
             AbsoluteUnixPath.get(it)
-        } ?: emptySet()
+        }.ifEmpty { emptySet() }
 
         return javaContainerBuilder.toContainerBuilder().apply {
-            setFormat(parameters.toFormat.get())
-            setPlatforms(platforms)
-            parameters.args.orNull?.ifEmpty { null }?.let {
-                setProgramArguments()
+            when (parameters.toFormat.get()) {
+                io.github.hfhbd.jib.ImageFormat.OCI -> setFormat(ImageFormat.OCI)
+                io.github.hfhbd.jib.ImageFormat.Docker -> setFormat(ImageFormat.Docker)
             }
-            setEnvironment(parameters.environment.orNull.orEmpty())
-            parameters.ports.orNull?.ifEmpty { null }?.let {
+            setPlatforms(platforms)
+            parameters.args.get().ifEmpty { null }?.let {
+                setProgramArguments(it)
+            }
+            setEnvironment(parameters.environment.get())
+            parameters.ports.get().ifEmpty { null }?.let {
                 setExposedPorts(Ports.parse(it))
             }
             setVolumes(volumes)
@@ -404,7 +422,7 @@ abstract class Worker : WorkAction<Worker.Params> {
         baseImageCachePath: Path,
         applicationCachePath: Path,
         sourceSetOutputClassesDir: Directory,
-        sourceSetOutputResourcesDir: Directory,
+        sourceSetOutputResourcesDir: Directory?,
         dependencies: List<DependencyFileType>,
     ) {
         val jibContainerBuilder = setupBuilder(
