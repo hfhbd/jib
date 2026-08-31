@@ -1,0 +1,165 @@
+public final class io/github/hfhbd/jib/ImageFormat : java/lang/Enum {
+	public static final field Docker Lio/github/hfhbd/jib/ImageFormat;
+	public static final field OCI Lio/github/hfhbd/jib/ImageFormat;
+	public static fun getEntries ()Lkotlin/enums/EnumEntries;
+	public static fun valueOf (Ljava/lang/String;)Lio/github/hfhbd/jib/ImageFormat;
+	public static fun values ()[Lio/github/hfhbd/jib/ImageFormat;
+}
+
+public abstract interface class io/github/hfhbd/jib/JibBuildModel : org/gradle/features/binding/BuildModel {
+	public abstract fun getContainer ()Lio/github/hfhbd/jib/JibBuildModel$Container;
+	public abstract fun getFrom ()Lio/github/hfhbd/jib/JibBuildModel$From;
+	public abstract fun getTo ()Lio/github/hfhbd/jib/JibBuildModel$To;
+}
+
+public abstract interface class io/github/hfhbd/jib/JibBuildModel$Container {
+	public abstract fun getEnvironment ()Lorg/gradle/api/provider/MapProperty;
+	public abstract fun getMainClass ()Lorg/gradle/api/provider/Property;
+	public abstract fun getPorts ()Lorg/gradle/api/provider/ListProperty;
+	public abstract fun getVolumes ()Lorg/gradle/api/provider/ListProperty;
+}
+
+public abstract interface class io/github/hfhbd/jib/JibBuildModel$From {
+	public abstract fun getImage ()Lorg/gradle/api/provider/Property;
+	public abstract fun getPlatforms ()Lorg/gradle/api/provider/ListProperty;
+}
+
+public abstract interface class io/github/hfhbd/jib/JibBuildModel$To {
+	public abstract fun getFormat ()Lorg/gradle/api/provider/Property;
+	public abstract fun getImage ()Lorg/gradle/api/provider/Property;
+}
+
+public abstract interface class io/github/hfhbd/jib/JibDefinition : org/gradle/features/binding/Definition {
+	public abstract fun getContainer ()Lio/github/hfhbd/jib/JibDefinition$Container;
+	public abstract fun getFrom ()Lio/github/hfhbd/jib/JibDefinition$From;
+	public abstract fun getTo ()Lio/github/hfhbd/jib/JibDefinition$To;
+}
+
+public abstract interface class io/github/hfhbd/jib/JibDefinition$Container {
+	public abstract fun getEnvironment ()Lorg/gradle/api/provider/MapProperty;
+	public abstract fun getPorts ()Lorg/gradle/api/provider/ListProperty;
+	public abstract fun getVolumes ()Lorg/gradle/api/provider/ListProperty;
+}
+
+public abstract interface class io/github/hfhbd/jib/JibDefinition$From {
+	public abstract fun getImage ()Lorg/gradle/api/provider/Property;
+	public abstract fun getPlatforms ()Lorg/gradle/api/provider/ListProperty;
+}
+
+public abstract interface class io/github/hfhbd/jib/JibDefinition$To {
+	public abstract fun getFormat ()Lorg/gradle/api/provider/Property;
+	public abstract fun getImage ()Lorg/gradle/api/provider/Property;
+}
+
+public final class io/github/hfhbd/jib/JibFeature : org/gradle/api/Plugin, org/gradle/features/binding/ProjectFeatureBinding {
+	public fun <init> ()V
+	public synthetic fun apply (Ljava/lang/Object;)V
+	public fun apply (Lorg/gradle/api/Project;)V
+	public fun bind (Lorg/gradle/features/binding/ProjectFeatureBindingBuilder;)V
+}
+
+public abstract class io/github/hfhbd/jib/JibFeature$ApplyAction : org/gradle/features/binding/ProjectFeatureApplyAction {
+	public fun <init> ()V
+	public fun apply (Lorg/gradle/features/binding/ProjectFeatureApplicationContext;Lio/github/hfhbd/jib/JibDefinition;Lio/github/hfhbd/jib/JibBuildModel;Lorg/jetbrains/kotlin/gradle/declarative/projecttypes/jvmapplication/JvmApplicationProjectType;)V
+	public synthetic fun apply (Lorg/gradle/features/binding/ProjectFeatureApplicationContext;Lorg/gradle/features/binding/Definition;Lorg/gradle/features/binding/BuildModel;Ljava/lang/Object;)V
+	public abstract fun getConfigurations ()Lorg/gradle/features/registration/ConfigurationRegistrar;
+	public abstract fun getDependencyFactory ()Lorg/gradle/api/artifacts/dsl/DependencyFactory;
+	public abstract fun getLayout ()Lorg/gradle/features/file/ProjectFeatureLayout;
+	public abstract fun getTasks ()Lorg/gradle/features/registration/TaskRegistrar;
+}
+
+public final class io/github/hfhbd/jib/JibFeaturesPlugin : org/gradle/api/Plugin {
+	public fun <init> ()V
+	public synthetic fun apply (Ljava/lang/Object;)V
+	public fun apply (Lorg/gradle/api/initialization/Settings;)V
+}
+
+public final class io/github/hfhbd/jib/VersionKt {
+	public static final field JIB_MODULE Ljava/lang/String;
+	public static final field JIB_VERSION Ljava/lang/String;
+}
+
+public abstract interface class tel/schich/tinyjib/params/BaseImageParameters {
+	public abstract fun getImage ()Lorg/gradle/api/provider/Property;
+	public abstract fun getPassword ()Lorg/gradle/api/provider/Property;
+	public abstract fun getPlatforms ()Lorg/gradle/api/provider/ListProperty;
+	public abstract fun getUsername ()Lorg/gradle/api/provider/Property;
+}
+
+public abstract interface class tel/schich/tinyjib/params/ContainerParameters {
+	public abstract fun getAppRoot ()Lorg/gradle/api/provider/Property;
+	public abstract fun getArgs ()Lorg/gradle/api/provider/ListProperty;
+	public abstract fun getEntrypoint ()Lorg/gradle/api/provider/ListProperty;
+	public abstract fun getEnvironment ()Lorg/gradle/api/provider/MapProperty;
+	public abstract fun getJvmFlags ()Lorg/gradle/api/provider/ListProperty;
+	public abstract fun getLabels ()Lorg/gradle/api/provider/MapProperty;
+	public abstract fun getMainClass ()Lorg/gradle/api/provider/Property;
+	public abstract fun getPorts ()Lorg/gradle/api/provider/ListProperty;
+	public abstract fun getUser ()Lorg/gradle/api/provider/Property;
+	public abstract fun getVolumes ()Lorg/gradle/api/provider/ListProperty;
+	public abstract fun getWorkingDirectory ()Lorg/gradle/api/provider/Property;
+}
+
+public abstract interface class tel/schich/tinyjib/params/TargetImageParameters {
+	public abstract fun getFormat ()Lorg/gradle/api/provider/Property;
+	public abstract fun getImage ()Lorg/gradle/api/provider/Property;
+	public abstract fun getPassword ()Lorg/gradle/api/provider/Property;
+	public abstract fun getTags ()Lorg/gradle/api/provider/SetProperty;
+	public abstract fun getUsername ()Lorg/gradle/api/provider/Property;
+}
+
+public abstract class tel/schich/tinyjib/tasks/TinyJibPublishTask : org/gradle/api/DefaultTask {
+	public fun <init> ()V
+	public abstract fun getApplicationCache ()Lorg/gradle/api/file/DirectoryProperty;
+	public abstract fun getBaseImageCache ()Lorg/gradle/api/file/DirectoryProperty;
+	public abstract fun getClassFiles ()Lorg/gradle/api/file/ConfigurableFileCollection;
+	public abstract fun getContainer ()Ltel/schich/tinyjib/params/ContainerParameters;
+	public abstract fun getDetails ()Lorg/gradle/api/provider/ListProperty;
+	public abstract fun getDigest ()Lorg/gradle/api/file/RegularFileProperty;
+	public abstract fun getFiles ()Lorg/gradle/api/provider/ListProperty;
+	public abstract fun getFrom ()Ltel/schich/tinyjib/params/BaseImageParameters;
+	public abstract fun getImageId ()Lorg/gradle/api/file/RegularFileProperty;
+	public abstract fun getJibClasspath ()Lorg/gradle/api/file/ConfigurableFileCollection;
+	public abstract fun getResources ()Lorg/gradle/api/file/DirectoryProperty;
+	public abstract fun getTo ()Ltel/schich/tinyjib/params/TargetImageParameters;
+	protected abstract fun getWorkerExecutor ()Lorg/gradle/workers/WorkerExecutor;
+	protected final fun performAction ()V
+}
+
+public abstract class tel/schich/tinyjib/tasks/Worker : org/gradle/workers/WorkAction {
+	public fun <init> ()V
+	public fun execute ()V
+}
+
+public abstract interface class tel/schich/tinyjib/tasks/Worker$Params : org/gradle/workers/WorkParameters {
+	public abstract fun getAppRoot ()Lorg/gradle/api/provider/Property;
+	public abstract fun getApplicationCache ()Lorg/gradle/api/file/DirectoryProperty;
+	public abstract fun getArgs ()Lorg/gradle/api/provider/ListProperty;
+	public abstract fun getBaseImageCache ()Lorg/gradle/api/file/DirectoryProperty;
+	public abstract fun getClassFiles ()Lorg/gradle/api/file/ConfigurableFileCollection;
+	public abstract fun getDigest ()Lorg/gradle/api/file/RegularFileProperty;
+	public abstract fun getEntrypoint ()Lorg/gradle/api/provider/ListProperty;
+	public abstract fun getEnvironment ()Lorg/gradle/api/provider/MapProperty;
+	public abstract fun getExternalRuntimeDependencies ()Lorg/gradle/api/file/ConfigurableFileCollection;
+	public abstract fun getExternalSnapshotRuntimeDependencies ()Lorg/gradle/api/file/ConfigurableFileCollection;
+	public abstract fun getFromImage ()Lorg/gradle/api/provider/Property;
+	public abstract fun getFromPassword ()Lorg/gradle/api/provider/Property;
+	public abstract fun getFromPlatforms ()Lorg/gradle/api/provider/ListProperty;
+	public abstract fun getFromUsername ()Lorg/gradle/api/provider/Property;
+	public abstract fun getImageId ()Lorg/gradle/api/file/RegularFileProperty;
+	public abstract fun getJvmFlags ()Lorg/gradle/api/provider/ListProperty;
+	public abstract fun getLabels ()Lorg/gradle/api/provider/MapProperty;
+	public abstract fun getMainClass ()Lorg/gradle/api/provider/Property;
+	public abstract fun getPorts ()Lorg/gradle/api/provider/ListProperty;
+	public abstract fun getProjectRuntimeDependencies ()Lorg/gradle/api/file/ConfigurableFileCollection;
+	public abstract fun getResources ()Lorg/gradle/api/file/DirectoryProperty;
+	public abstract fun getToFormat ()Lorg/gradle/api/provider/Property;
+	public abstract fun getToImage ()Lorg/gradle/api/provider/Property;
+	public abstract fun getToPassword ()Lorg/gradle/api/provider/Property;
+	public abstract fun getToTags ()Lorg/gradle/api/provider/SetProperty;
+	public abstract fun getToUsername ()Lorg/gradle/api/provider/Property;
+	public abstract fun getUser ()Lorg/gradle/api/provider/Property;
+	public abstract fun getVolumes ()Lorg/gradle/api/provider/ListProperty;
+	public abstract fun getWorkingDirectory ()Lorg/gradle/api/provider/Property;
+}
+
