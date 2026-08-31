@@ -38,12 +38,10 @@ import org.gradle.api.tasks.OutputFile
 import org.gradle.api.tasks.PathSensitive
 import org.gradle.api.tasks.PathSensitivity
 import org.gradle.api.tasks.TaskAction
-import org.gradle.internal.impldep.kotlinx.serialization.Serializable
 import org.gradle.workers.WorkAction
 import org.gradle.workers.WorkParameters
 import org.gradle.workers.WorkerExecutor
 import java.io.File
-import java.nio.file.Files
 import java.nio.file.Path
 import java.util.function.Consumer
 import javax.inject.Inject
