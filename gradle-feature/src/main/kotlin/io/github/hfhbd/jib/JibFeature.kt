@@ -44,11 +44,13 @@ class JibFeature : Plugin<Project>, ProjectFeatureBinding {
             val mainCompilationUnit = parentBuildModel.compilationUnits.getByName("main")
             val mainApplication = parentBuildModel.applications.getByName("main")
 
-            buildModel.from.image.set(definition.from.image)
-            buildModel.from.image.convention(
-                mainCompilationUnit.jvmEcosystem.jdkToolchain.languageVersion.map {
-                    "eclipse-temurin:${it.asInt()}-jre"
-                }
+            buildModel.from.image.set(
+                definition.from.image
+                    .orElse(
+                        mainCompilationUnit.jvmEcosystem.jdkToolchain.languageVersion.map {
+                            "eclipse-temurin:${it.asInt()}-jre"
+                        }
+                    )
             )
             buildModel.from.username.set(definition.from.username)
             buildModel.from.password.set(definition.from.password)
@@ -57,8 +59,7 @@ class JibFeature : Plugin<Project>, ProjectFeatureBinding {
             buildModel.to.image.set(definition.to.image)
             buildModel.to.username.set(definition.to.username)
             buildModel.to.password.set(definition.to.password)
-            buildModel.to.format.set(definition.to.format)
-            buildModel.to.format.convention(ImageFormat.OCI)
+            buildModel.to.format.set(definition.to.format.orElse(ImageFormat.OCI))
 
             buildModel.container.jvmFlags.addAll(definition.container.jvmFlags)
             buildModel.container.environment.putAll(definition.container.environment)
@@ -67,8 +68,7 @@ class JibFeature : Plugin<Project>, ProjectFeatureBinding {
             buildModel.container.ports.addAll(definition.container.ports)
             buildModel.container.volumes.addAll(definition.container.volumes)
             buildModel.container.labels.putAll(definition.container.labels)
-            buildModel.container.appRoot.set(definition.container.appRoot)
-            buildModel.container.appRoot.convention(JavaContainerBuilder.DEFAULT_APP_ROOT)
+            buildModel.container.appRoot.set(definition.container.appRoot.orElse(JavaContainerBuilder.DEFAULT_APP_ROOT))
             buildModel.container.user.set(definition.container.user)
             buildModel.container.workingDirectory.set(definition.container.workingDirectory)
             buildModel.container.mainClass.set(mainApplication.mainClassName)
@@ -84,8 +84,9 @@ class JibFeature : Plugin<Project>, ProjectFeatureBinding {
 
             val OUTPUT_FILE_NAME = "jib/image"
 
-            val runtimeClasspathArtifacts =
-                mainApplication.runtimeOnlyConfiguration.incoming.artifacts.resolvedArtifacts
+            val runtimeClasspathArtifacts = configurations.resolvable("jibRuntimeClasspath") {
+                it.extendsFrom(mainApplication.runtimeOnlyConfiguration)
+            }.flatMap { it.incoming.artifacts.resolvedArtifacts }
             val details = runtimeClasspathArtifacts.map {
                 it.map { artifact -> artifact.id }
             }
@@ -100,8 +101,8 @@ class JibFeature : Plugin<Project>, ProjectFeatureBinding {
                 it.fromPlatforms.set(buildModel.from.platforms)
 
                 it.toImage.set(buildModel.to.image)
-                it.toImage.set(buildModel.to.username)
-                it.toImage.set(buildModel.to.password)
+                it.toUsername.set(buildModel.to.username)
+                it.toPassword.set(buildModel.to.password)
                 it.toTags.addAll(buildModel.to.tags)
                 it.toFormat.set(buildModel.to.format)
 
@@ -124,6 +125,10 @@ class JibFeature : Plugin<Project>, ProjectFeatureBinding {
 
                 it.digest.convention(layout.contextBuildDirectory.map { it.file("$OUTPUT_FILE_NAME.digest") })
                 it.imageId.convention(layout.contextBuildDirectory.map { it.file("$OUTPUT_FILE_NAME.id") })
+                it.tarFile.convention(layout.contextBuildDirectory.map { it.file("$OUTPUT_FILE_NAME.tar") })
+
+                it.applicationCache.convention(layout.contextBuildDirectory.map { it.dir("jib/applicationCache") })
+                it.baseImageCache.convention(layout.contextBuildDirectory.map { it.dir("jib/baseImageCache") })
 
                 it.jibClasspath.from(workerClasspath)
             }

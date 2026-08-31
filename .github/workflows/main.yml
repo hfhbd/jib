@@ -21,7 +21,7 @@ jobs:
           build-scan-terms-of-use-agree: 'yes'
 
       - name: Build with Gradle
-        run: ./gradlew build
+        run: ./gradlew build integrationTest
         env:
           ORG_GRADLE_PROJECT_KDGPUsername: ${{ github.actor }}
           ORG_GRADLE_PROJECT_KDGPPassword: ${{ github.token }}

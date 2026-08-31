@@ -142,6 +142,7 @@ public abstract class io/github/hfhbd/jib/JibTask : org/gradle/api/DefaultTask {
 	public abstract fun getMainClass ()Lorg/gradle/api/provider/Property;
 	public abstract fun getPorts ()Lorg/gradle/api/provider/ListProperty;
 	public abstract fun getResources ()Lorg/gradle/api/file/DirectoryProperty;
+	public abstract fun getTarFile ()Lorg/gradle/api/file/RegularFileProperty;
 	public abstract fun getToFormat ()Lorg/gradle/api/provider/Property;
 	public abstract fun getToImage ()Lorg/gradle/api/provider/Property;
 	public abstract fun getToPassword ()Lorg/gradle/api/provider/Property;
@@ -182,8 +183,10 @@ public abstract interface class io/github/hfhbd/jib/Worker$Params : org/gradle/w
 	public abstract fun getJvmFlags ()Lorg/gradle/api/provider/ListProperty;
 	public abstract fun getLabels ()Lorg/gradle/api/provider/MapProperty;
 	public abstract fun getMainClass ()Lorg/gradle/api/provider/Property;
+	public abstract fun getOffline ()Lorg/gradle/api/provider/Property;
 	public abstract fun getPorts ()Lorg/gradle/api/provider/ListProperty;
 	public abstract fun getResources ()Lorg/gradle/api/file/DirectoryProperty;
+	public abstract fun getTarFile ()Lorg/gradle/api/file/RegularFileProperty;
 	public abstract fun getToFormat ()Lorg/gradle/api/provider/Property;
 	public abstract fun getToImage ()Lorg/gradle/api/provider/Property;
 	public abstract fun getToPassword ()Lorg/gradle/api/provider/Property;
