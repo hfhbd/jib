@@ -6,7 +6,7 @@ import com.google.cloud.tools.jib.api.ImageReference
 import com.google.cloud.tools.jib.api.JavaContainerBuilder
 import com.google.cloud.tools.jib.api.Jib
 import com.google.cloud.tools.jib.api.JibContainerBuilder
-import com.google.cloud.tools.jib.api.LogEvent
+import com.google.cloud.tools.jib.api.LogEvent.Level
 import com.google.cloud.tools.jib.api.Ports
 import com.google.cloud.tools.jib.api.RegistryImage
 import com.google.cloud.tools.jib.api.TarImage
@@ -45,7 +45,6 @@ import org.gradle.workers.WorkParameters
 import org.gradle.workers.WorkerExecutor
 import java.io.File
 import java.nio.file.Path
-import java.util.function.Consumer
 import javax.inject.Inject
 
 @CacheableTask
@@ -261,17 +260,6 @@ abstract class Worker : WorkAction<Worker.Params> {
 
     private val logger: Logger = Logging.getLogger(javaClass)
 
-    private val logAdapter = Consumer<LogEvent> {
-        when (it.level) {
-            LogEvent.Level.ERROR -> logger.error(it.message)
-            LogEvent.Level.WARN -> logger.warn(it.message)
-            null, LogEvent.Level.LIFECYCLE -> logger.lifecycle(it.message)
-            LogEvent.Level.PROGRESS -> logger.lifecycle(it.message)
-            LogEvent.Level.INFO -> logger.info(it.message)
-            LogEvent.Level.DEBUG -> logger.debug(it.message)
-        }
-    }
-
     override fun execute() {
         val imageRef = ImageReference.parse(parameters.toImage.get())
         val containerizer = if (parameters.offline.get()) {
@@ -310,7 +298,16 @@ abstract class Worker : WorkAction<Worker.Params> {
         username: String?,
         password: String?,
     ) {
-        val credHelperFactory = CredentialRetrieverFactory.forImage(imageRef, logAdapter)
+        val credHelperFactory = CredentialRetrieverFactory.forImage(imageRef) {
+            when (it.level) {
+                Level.ERROR -> logger.error(it.message)
+                Level.WARN -> logger.warn(it.message)
+                Level.LIFECYCLE -> logger.lifecycle(it.message)
+                Level.PROGRESS -> logger.lifecycle(it.message)
+                Level.INFO -> logger.info(it.message)
+                Level.DEBUG -> logger.debug(it.message)
+            }
+        }
 
         addCredentialRetriever(credHelperFactory.wellKnownCredentialHelpers())
         addCredentialRetriever(credHelperFactory.googleApplicationDefaultCredentials())
@@ -332,7 +329,7 @@ abstract class Worker : WorkAction<Worker.Params> {
             return JavaContainerBuilder.from(fromImage)
         }
 
-        val imageReference = ImageReference.parse(fromImage.split("://", limit = 2).last())
+        val imageReference = ImageReference.parse(fromImage)
 
         val baseImage = RegistryImage.named(imageReference)
         baseImage.configureCredentialRetrievers(imageReference, fromUsername, fromPassword)
@@ -383,7 +380,7 @@ abstract class Worker : WorkAction<Worker.Params> {
         val platforms = parameters.fromPlatforms.get().mapTo(mutableSetOf()) {
             val (architecture, os) = it.split("/")
             Platform(architecture, os)
-        }.ifEmpty {  setOf(Platform("amd64", "linux")) }
+        }.ifEmpty { setOf(Platform("amd64", "linux")) }
 
         val volumes = parameters.volumes.get().mapTo(mutableSetOf()) {
             AbsoluteUnixPath.get(it)
@@ -395,11 +392,11 @@ abstract class Worker : WorkAction<Worker.Params> {
                 io.github.hfhbd.jib.ImageFormat.Docker -> setFormat(ImageFormat.Docker)
             }
             setPlatforms(platforms)
-            parameters.args.get().ifEmpty { null }?.let {
+            parameters.args.get().takeIf { it.isNotEmpty() }?.let {
                 setProgramArguments(it)
             }
             setEnvironment(parameters.environment.get())
-            parameters.ports.get().ifEmpty { null }?.let {
+            parameters.ports.get().takeIf { it.isNotEmpty() }?.let {
                 setExposedPorts(Ports.parse(it))
             }
             setVolumes(volumes)
@@ -432,11 +429,14 @@ abstract class Worker : WorkAction<Worker.Params> {
             dependencies = dependencies,
         )
 
-        val jibContainer = containerizer
-            .setBaseImageLayersCache(baseImageCachePath)
-            .setApplicationLayersCache(applicationCachePath)
-            .apply { tags.forEach { withAdditionalTag(it) } }
-            .let(jibContainerBuilder::containerize)
+        containerizer.setBaseImageLayersCache(baseImageCachePath)
+        containerizer.setApplicationLayersCache(applicationCachePath)
+
+        for (it in tags) {
+            containerizer.withAdditionalTag(it)
+        }
+
+        val jibContainer = jibContainerBuilder.containerize(containerizer)
 
         val imageDigest = jibContainer.digest.toString()
         digestOutputFile.writeText(imageDigest)
