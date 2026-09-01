@@ -33,7 +33,7 @@ jobs:
           echo "Tar file size:"
           ls -lh "$TAR_FILE"
           echo "Tar file contents:"
-          tar -tzf "$TAR_FILE" | head -20
+          tar -tf "$TAR_FILE" | head -20
       - run: docker load -i gradle-feature/build/jib/test.tar
       - run: |
           IMAGE_ID=$(docker images jib-example --format '{{.ID}}' | head -n1)
