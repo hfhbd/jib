@@ -7,10 +7,14 @@ on:
 jobs:
   publishGitHubPackages:
     runs-on: ubuntu-latest
+
     permissions:
       contents: read
       packages: write
-      id-token: write
+
+    environment:
+      name: CD
+      deployment: false
 
     steps:
       - name: Set environment for version
