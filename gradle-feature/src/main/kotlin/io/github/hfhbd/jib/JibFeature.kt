@@ -86,6 +86,7 @@ class JibFeature : Plugin<Project>, ProjectFeatureBinding {
 
             val runtimeClasspathArtifacts = configurations.resolvable("jibRuntimeClasspath") {
                 it.extendsFrom(mainApplication.runtimeOnlyConfiguration)
+                it.extendsFrom(mainCompilationUnit.jvmEcosystem.implementationConfiguration)
             }.flatMap { it.incoming.artifacts.resolvedArtifacts }
             val details = runtimeClasspathArtifacts.map {
                 it.map { artifact -> artifact.id }

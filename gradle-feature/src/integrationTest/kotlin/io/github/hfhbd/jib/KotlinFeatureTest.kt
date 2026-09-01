@@ -53,7 +53,6 @@ class KotlinFeatureTest {
                |  jib {
                |    to {
                |      image = "example"
-               |      format = io.github.hfhbd.jib.ImageFormat.Docker
                |    }
                |  }
                |}
