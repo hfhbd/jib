@@ -35,6 +35,8 @@ jobs:
           ORG_GRADLE_PROJECT_signingPassword: ${{ secrets.SIGNING_PASSWORD }}
           ORG_GRADLE_PROJECT_mavenCentralUsername: ${{ secrets.CENTRAL_USERNAME }}
           ORG_GRADLE_PROJECT_mavenCentralPassword: ${{ secrets.CENTRAL_PASSWORD }}
+          ORG_GRADLE_PROJECT_KDGPUsername: ${{ github.actor }}
+          ORG_GRADLE_PROJECT_KDGPPassword: ${{ github.token }}
 
   publishGitHubPackages:
     runs-on: ubuntu-latest
