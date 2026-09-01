@@ -27,6 +27,13 @@ jobs:
           ORG_GRADLE_PROJECT_KDGPPassword: ${{ github.token }}
       - run: ls
       - run: ls gradle-feature/build/jib
+      - name: Validate tar file before loading
+        run: |
+          TAR_FILE="gradle-feature/build/jib/test.tar"
+          echo "Tar file size:"
+          ls -lh "$TAR_FILE"
+          echo "Tar file contents:"
+          tar -tzf "$TAR_FILE" | head -20
       - run: docker load -i gradle-feature/build/jib/test.tar
       - run: |
           IMAGE_ID=$(docker images jib-example --format '{{.ID}}' | head -n1)
