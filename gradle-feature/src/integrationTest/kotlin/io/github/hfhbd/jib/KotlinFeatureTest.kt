@@ -40,11 +40,16 @@ class KotlinFeatureTest {
 """.trimMargin()
         )
 
-        File(projectDir, "build.gradle.dcl").writeText(
+        File(projectDir, "build.gradle.kts").writeText(
             // language=kotlin
             """
                |jvmApplication {
                |  mainClass = "com.example.MainKt"
+               |  kotlin {
+               |    serialization {
+               |      enabledFormats = listOf("json")
+               |    }
+               |  }
                |  jib {
                |    to {
                |      image = "example"
@@ -58,6 +63,11 @@ class KotlinFeatureTest {
         writeMainClass(projectDir)
 
         assertBuild(projectDir)
+        File(projectDir, "build/jib/image.tar")
+            .copyTo(File("build/jib/test.tar"), overwrite = true)
+
+        File(projectDir, "build/jib/image.id")
+            .copyTo(File("build/jib/test.id"), overwrite = true)
     }
 
     fun writeMainClass(projectDir: File) {
@@ -69,13 +79,13 @@ class KotlinFeatureTest {
                 """package com.example
 
 fun main() {
-    println("Hello World")
+    println("Hello World" + kotlinx.serialization.json.Json)
 }"""
             )
         }
     }
 
-    private fun assertBuild(projectDir: File) : File {
+    private fun assertBuild(projectDir: File) {
 
         val isDebug = System.getenv("DEBUGGER_ENABLED") == "true"
 
@@ -108,9 +118,10 @@ fun main() {
             .build()
 
         assertEquals(TaskOutcome.SUCCESS, jibOffline.task(":jib")?.outcome)
+
         val tarFile = File(projectDir, "build/jib/image.tar")
         assertTrue(tarFile.exists())
-
-        return tarFile
+        val imageIdFile = File(projectDir, "build/jib/image.id")
+        assertTrue(imageIdFile.exists())
     }
 }
