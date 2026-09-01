@@ -26,7 +26,7 @@ jobs:
           ORG_GRADLE_PROJECT_KDGPUsername: ${{ github.actor }}
           ORG_GRADLE_PROJECT_KDGPPassword: ${{ github.token }}
       - run: ls
-      - run: ls gradle/feature/build/jib
+      - run: ls gradle-feature/build/jib
       - run: docker load -i gradle-feature/build/jib/test.tar
       - run: |
           IMAGE_ID=$(docker images jib-example --format '{{.ID}}' | head -n1)
