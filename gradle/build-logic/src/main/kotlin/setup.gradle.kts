@@ -3,6 +3,7 @@ plugins {
     id("java-gradle-plugin")
     id("maven-publish")
     id("signing")
+    id("io.github.hfhbd.mavencentral")
 }
 
 kotlin {

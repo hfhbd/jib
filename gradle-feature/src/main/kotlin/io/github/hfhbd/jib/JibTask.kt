@@ -258,7 +258,7 @@ abstract class Worker : WorkAction<Worker.Params> {
         val offline: Property<Boolean>
     }
 
-    private val logger: Logger = Logging.getLogger(javaClass)
+    private val logger = Logging.getLogger(javaClass)
 
     override fun execute() {
         val imageRef = ImageReference.parse(parameters.toImage.get())
@@ -269,9 +269,9 @@ abstract class Worker : WorkAction<Worker.Params> {
         } else {
             val targetImage = RegistryImage.named(imageRef)
             targetImage.configureCredentialRetrievers(
-                imageRef,
-                parameters.toUsername.orNull,
-                parameters.toPassword.orNull
+                imageRef = imageRef,
+                username = parameters.toUsername.orNull,
+                password = parameters.toPassword.orNull,
             )
             Containerizer.to(targetImage)
         }
@@ -284,12 +284,12 @@ abstract class Worker : WorkAction<Worker.Params> {
             digestOutputFile = parameters.digest.asFile.get(),
             imageIdOutputFile = parameters.imageId.asFile.get(),
             appRoot = parameters.appRoot.get(),
-            containerizer,
-            baseImageCachePath,
-            applicationCachePath,
-            parameters.classesDirectory.get(),
-            parameters.resources.orNull,
-            parameters.dependencies.get(),
+            containerizer = containerizer,
+            baseImageCachePath = baseImageCachePath,
+            applicationCachePath = applicationCachePath,
+            sourceSetOutputClassesDir = parameters.classesDirectory.get(),
+            sourceSetOutputResourcesDir = parameters.resources.orNull,
+            dependencies = parameters.dependencies.get(),
         )
     }
 
