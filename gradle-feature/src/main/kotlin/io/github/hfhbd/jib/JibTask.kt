@@ -78,33 +78,41 @@ abstract class JibTask : DefaultTask() {
     abstract val toPassword: Property<String>
 
     @get:Input
+    @get:Optional
     abstract val toTags: SetProperty<String>
 
     @get:Input
     abstract val toFormat: Property<io.github.hfhbd.jib.ImageFormat>
 
     @get:Input
+    @get:Optional
     abstract val jvmFlags: ListProperty<String>
 
     @get:Input
+    @get:Optional
     abstract val environment: MapProperty<String, String>
 
     @get:Input
+    @get:Optional
     abstract val entrypoint: ListProperty<String>
 
     @get:Input
     abstract val mainClass: Property<String>
 
     @get:Input
+    @get:Optional
     abstract val args: ListProperty<String>
 
     @get:Input
+    @get:Optional
     abstract val ports: ListProperty<String>
 
     @get:Input
+    @get:Optional
     abstract val volumes: ListProperty<String>
 
     @get:Input
+    @get:Optional
     abstract val labels: MapProperty<String, String>
 
     @get:Input
@@ -118,10 +126,10 @@ abstract class JibTask : DefaultTask() {
     @get:Optional
     abstract val workingDirectory: Property<String>
 
-    @get:InputDirectory
+    @get:InputFiles
     @get:PathSensitive(PathSensitivity.RELATIVE)
     @get:IgnoreEmptyDirectories
-    abstract val classesDirectory: DirectoryProperty
+    abstract val classesDirectories: ConfigurableFileCollection
 
     @get:Input
     abstract val details: ListProperty<ComponentArtifactIdentifier>
@@ -195,7 +203,7 @@ abstract class JibTask : DefaultTask() {
             it.user.set(user)
             it.workingDirectory.set(workingDirectory)
 
-            it.classesDirectory.set(classesDirectory)
+            it.classesDirectories.from(classesDirectories)
             it.dependencies.set(dependencies)
             it.resources.set(resources)
 
@@ -245,7 +253,7 @@ abstract class Worker : WorkAction<Worker.Params> {
         val user: Property<String>
         val workingDirectory: Property<String>
 
-        val classesDirectory: DirectoryProperty
+        val classesDirectories: ConfigurableFileCollection
         val dependencies: ListProperty<DependencyFileType>
         val resources: DirectoryProperty
 
@@ -287,7 +295,6 @@ abstract class Worker : WorkAction<Worker.Params> {
             containerizer = containerizer,
             baseImageCachePath = baseImageCachePath,
             applicationCachePath = applicationCachePath,
-            sourceSetOutputClassesDir = parameters.classesDirectory.get(),
             sourceSetOutputResourcesDir = parameters.resources.orNull,
             dependencies = parameters.dependencies.get(),
         )
@@ -339,7 +346,6 @@ abstract class Worker : WorkAction<Worker.Params> {
 
     private fun setupBuilder(
         appRoot: String,
-        sourceSetOutputClassesDir: Directory,
         sourceSetOutputResourcesDir: Directory?,
         dependencies: List<DependencyFileType>,
     ): JibContainerBuilder {
@@ -352,7 +358,11 @@ abstract class Worker : WorkAction<Worker.Params> {
         ).apply {
             setAppRoot(appRoot)
 
-            addClasses(sourceSetOutputClassesDir.asFile.toPath())
+            for (dir in parameters.classesDirectories) {
+                if (dir.exists()) {
+                    addClasses(dir.toPath())
+                }
+            }
 
             for ((jar, type) in dependencies) {
                 when (type) {
@@ -418,13 +428,11 @@ abstract class Worker : WorkAction<Worker.Params> {
         containerizer: Containerizer,
         baseImageCachePath: Path,
         applicationCachePath: Path,
-        sourceSetOutputClassesDir: Directory,
         sourceSetOutputResourcesDir: Directory?,
         dependencies: List<DependencyFileType>,
     ) {
         val jibContainerBuilder = setupBuilder(
             appRoot,
-            sourceSetOutputClassesDir,
             sourceSetOutputResourcesDir,
             dependencies = dependencies,
         )

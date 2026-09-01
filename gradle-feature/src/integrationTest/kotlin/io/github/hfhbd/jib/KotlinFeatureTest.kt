@@ -85,7 +85,7 @@ fun main() {
             .withPluginClasspath()
             .forwardOutput()
             .withArguments(
-                ":assemble",
+                "help",
                 "--write-verification-metadata",
                 "sha256",
                 "-Porg.gradle.kotlin.dsl.dcl=true",
@@ -103,6 +103,7 @@ fun main() {
                 "-Porg.gradle.kotlin.dsl.dcl=true",
                 "-Porg.gradle.isolated-projects=true",
                 "--offline",
+                "--stacktrace",
             )
             .build()
 

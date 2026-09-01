@@ -118,7 +118,7 @@ class JibFeature : Plugin<Project>, ProjectFeatureBinding {
                 it.user.set(buildModel.container.user)
                 it.workingDirectory.set(buildModel.container.workingDirectory)
 
-                it.classesDirectory.set(mainCompilationUnit.destinationDirectory)
+                it.classesDirectories.from(mainCompilationUnit.outputs)
                 it.details.set(details)
                 it.files.set(files)
                 it.resources.set(mainCompilationUnit.resourcesOutput)
