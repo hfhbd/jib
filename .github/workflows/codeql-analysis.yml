@@ -37,7 +37,7 @@ jobs:
           ORG_GRADLE_PROJECT_KDGPPassword: ${{ github.token }}
 
       - name: Perform CodeQL Analysis
-        uses: github/codeql-action/analyze@6f2ac81f5cd81fe351a197ba0b00d91d03cd2aee # v3
+        uses: github/codeql-action/analyze@9b3254085494b55a0f7c4c2b3d2d52cc712ce370 # v3
 
   analyzeActions:
     name: Analyze Actions
@@ -58,4 +58,4 @@ jobs:
           tools: linked
 
       - name: Perform CodeQL Analysis
-        uses: github/codeql-action/analyze@6f2ac81f5cd81fe351a197ba0b00d91d03cd2aee # v3
+        uses: github/codeql-action/analyze@9b3254085494b55a0f7c4c2b3d2d52cc712ce370 # v3
